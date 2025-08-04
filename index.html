@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ata de Vistoria - Versão Final</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        /* Estilos Gerais e para Celular (Mobile-First) */
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #007bff;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --warning-color: #c82333;
+            --light-gray: #f0f2f5;
+            --border-color: #d9d9d9;
+            --text-color: #333;
+            --item-bg-color: #f8f9fa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+
+        .container {
+            padding: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            background-color: #ffffff;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.6em;
+            color: var(--primary-color);
+        }
+
+        .page-header .warning-text {
+            color: var(--warning-color);
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        form {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        fieldset {
+            border: none;
+            padding: 0;
+            margin: 0;
+            margin-bottom: 25px;
+        }
+
+        legend {
+            font-size: 1.5em;
+            font-weight: 600;
+            padding-bottom: 15px;
+            width: 100%;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .label-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        label,
+        .question-text {
+            font-weight: 500;
+        }
+
+        .help-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            color: var(--text-color);
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="datetime-local"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        input[readonly] {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+
+        .coordinates-group {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 15px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .pdf-button {
+            background-color: var(--success-color);
+        }
+
+        .add-row-button {
+            background-color: var(--info-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+
+        .remove-row-button {
+            background-color: var(--danger-color);
+            padding: 0;
+            width: 45px;
+            height: 45px;
+            font-size: 1.5em;
+            flex-shrink: 0;
+            margin-top: 0;
+        }
+
+        .location-button {
+            background-color: #6c757d;
+            padding: 0 15px;
+            align-self: center;
+            height: 48px;
+        }
+
+        .selection-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .selection-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .checkbox-item,
+        .radio-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .radio-item {
+            padding-left: 0;
+        }
+
+        .checkbox-item input,
+        .radio-item input {
+            margin-right: 10px;
+            width: 1.5em;
+            height: 1.5em;
+            flex-shrink: 0;
+        }
+
+        .checkbox-item label,
+        .radio-item label {
+            font-weight: normal;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 8px;
+        }
+
+        .comodo-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas: "nome nome" "qtde piso" "parede teto" "remover remover";
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .comodo-row .c-nome {
+            grid-area: nome;
+        }
+
+        .comodo-row .c-qtde {
+            grid-area: qtde;
+        }
+
+        .comodo-row .c-piso {
+            grid-area: piso;
+        }
+
+        .comodo-row .c-parede {
+            grid-area: parede;
+        }
+
+        .comodo-row .c-teto {
+            grid-area: teto;
+        }
+
+        .comodo-row .c-remover {
+            grid-area: remover;
+            align-self: center;
+        }
+
+        .comodo-row .form-group {
+            margin-bottom: 0;
+        }
+
+        @media (min-width: 768px) {
+            .comodo-row {
+                grid-template-columns: 3fr 1fr 2fr 2fr 2fr auto;
+                grid-template-areas: "nome qtde piso parede teto remover";
+                align-items: center;
+            }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #page-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px 15px;
+            border-top: 1px solid var(--border-color);
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        #page-footer p {
+            margin: 5px 0;
+        }
+
+        #page-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        #page-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>ATA DE VISTORIA 1.0</h1>
+            <p class="warning-text">ATENÇÃO: OS DADOS A SEGUIR DEVERÃO SER PREENCHIDOS COM AS INFORMAÇÕES OBTIDAS NO
+                MOMENTO DA VISTORIA</p>
+        </div>
+
+        <form id="vistoriaForm">
+            <fieldset>
+                <legend>DADOS INICIAIS</legend>
+                <div class="form-group">
+                    <div class="label-container"><label for="proposta_n">PROPOSTA Nº:</label><span class="help-icon"
+                            onclick="showHelp('proposta_n')">?</span></div><input type="text" id="proposta_n"
+                        name="proposta_n">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="data_hora_vistoria">DATA E HORA DA VISTORIA:</label><span
+                            class="help-icon" onclick="showHelp('data_hora_vistoria')">?</span></div><input
+                        type="datetime-local" id="data_hora_vistoria" name="data_hora_vistoria">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label>COORDENADAS:</label><span class="help-icon"
+                            onclick="showHelp('coordenadas')">?</span></div>
+                    <div class="coordinates-group"><input type="text" id="latitude" name="latitude"
+                            placeholder="Latitude"><input type="text" id="longitude" name="longitude"
+                            placeholder="Longitude"><button type="button" class="action-button location-button"
+                            onclick="obterLocalizacao()">📍</button></div>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="vistoriador">VISTORIADOR:</label><span class="help-icon"
+                            onclick="showHelp('vistoriador')">?</span></div><input type="text" id="vistoriador"
+                        name="vistoriador" value="Sarah Kelly Borcard dos Santos Pereira" readonly>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="cau_crea">CAU/CREA:</label><span class="help-icon"
+                            onclick="showHelp('cau_crea')">?</span></div><input type="text" id="cau_crea"
+                        name="cau_crea" value="CREA 2025102776" readonly>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="tipo_acompanhante">TIPO DE ACOMPANHANTE:</label><span
+                            class="help-icon" onclick="showHelp('tipo_acompanhante')">?</span></div><select
+                        id="tipo_acompanhante" name="tipo_acompanhante">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option value="Corretor">Corretor</option>
+                        <option value="Proprietário / Construtora">Proprietário / Construtora</option>
+                        <option value="Responsável Construtora">Responsável Construtora</option>
+                        <option value="Engenheiro da Obra">Engenheiro da Obra</option>
+                        <option value="Proponente / Comprador / Garantidor / Mutuário">Proponente / Comprador /
+                            Garantidor / Mutuário</option>
+                        <option value="Zelador">Zelador</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="nome_acompanhante">NOME DO ACOMPANHANTE:</label><span
+                            class="help-icon" onclick="showHelp('nome_acompanhante')">?</span></div><input type="text"
+                        id="nome_acompanhante" name="nome_acompanhante">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="contato">CONTATO:</label><span class="help-icon"
+                            onclick="showHelp('contato')">?</span></div><input type="text" id="contato" name="contato">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>ENDEREÇO / LOCALIZAÇÃO EXATA DO IMÓVEL</legend>
+                <div class="form-group">
+                    <div class="label-container"><label for="endereco">ENDEREÇO:</label><span class="help-icon"
+                            onclick="showHelp('endereco')">?</span></div><input type="text" id="endereco"
+                        name="endereco">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="numero">NÚMERO:</label><span class="help-icon"
+                            onclick="showHelp('numero')">?</span></div><input type="text" id="numero" name="numero">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="bairro">BAIRRO:</label><span class="help-icon"
+                            onclick="showHelp('bairro')">?</span></div><input type="text" id="bairro" name="bairro">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="uf">UF:</label><span class="help-icon"
+                            onclick="showHelp('uf')">?</span></div><input type="text" id="uf" name="uf" maxlength="2">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="cidade">CIDADE:</label><span class="help-icon"
+                            onclick="showHelp('cidade')">?</span></div><input type="text" id="cidade" name="cidade">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="complemento">COMPLEMENTO:</label><span class="help-icon"
+                            onclick="showHelp('complemento')">?</span></div><input type="text" id="complemento"
+                        name="complemento">
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>CHECK LIST DAS FOTOS</legend>
+                <div class="selection-grid">
+                    <div class="checkbox-item"><input type="checkbox" id="foto_fachada" name="fotos_checklist"><label
+                            for="foto_fachada">Fachada do Imóvel</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="foto_placa_rua" name="fotos_checklist"><label
+                            for="foto_placa_rua">Placa da Rua</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="foto_apto_torre" name="fotos_checklist"><label
+                            for="foto_apto_torre">Identif. do apto. | Torre</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="foto_vias" name="fotos_checklist"><label
+                            for="foto_vias">Via à direta e esquerda do imóvel</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="foto_vizinhos" name="fotos_checklist"><label
+                            for="foto_vizinhos">Imóveis vizinhos</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="foto_condominio" name="fotos_checklist"><label
+                            for="foto_condominio">Identificação do condomínio</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="foto_vaga" name="fotos_checklist"><label
+                            for="foto_vaga">Vaga de garagem</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="foto_hidrometro" name="fotos_checklist"><label
+                            for="foto_hidrometro">Hidrômetro</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="foto_quadro_energia"
+                            name="fotos_checklist"><label for="foto_quadro_energia">Quadro de energia</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="foto_comodos" name="fotos_checklist"><label
+                            for="foto_comodos">Todos os cômodos</label></div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>CARACTERÍSTICAS DA REGIÃO</legend>
+                <div class="form-group">
+                    <div class="label-container"><label for="uso_predominante">USO PREDOMINANTE:</label><span
+                            class="help-icon" onclick="showHelp('uso_predominante')">?</span></div><select
+                        id="uso_predominante" name="uso_predominante">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Residencial Unifamiliar</option>
+                        <option>Residencial Multifamiliar</option>
+                        <option>Comercial</option>
+                        <option>Industrial</option>
+                        <option>Misto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="padrao_construtivo">PADRÃO CONSTRUTIVO DA
+                            REGIÃO:</label><span class="help-icon" onclick="showHelp('padrao_construtivo')">?</span>
+                    </div><select id="padrao_construtivo" name="padrao_construtivo">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Baixo</option>
+                        <option>Médio</option>
+                        <option>Alto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="localizacao">LOCALIZAÇÃO:</label><span class="help-icon"
+                            onclick="showHelp('localizacao')">?</span></div><select id="localizacao" name="localizacao">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Urbano</option>
+                        <option>Suburbano</option>
+                        <option>Imóvel Rural</option>
+                        <option>Favela</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="desenvolvimento_bairro">DESENVOLVIMENTO DO
+                            BAIRRO:</label><span class="help-icon" onclick="showHelp('desenvolvimento_bairro')">?</span>
+                    </div><select id="desenvolvimento_bairro" name="desenvolvimento_bairro">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Antigo</option>
+                        <option>Novo</option>
+                        <option>Em Desenvolvimento</option>
+                        <option>Em Mudança de Ocupação</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="trafego">TRÁFEGO:</label><span class="help-icon"
+                            onclick="showHelp('trafego')">?</span></div><select id="trafego" name="trafego">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Reduzido</option>
+                        <option>Moderado</option>
+                        <option>Intenso</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="pavimentacao">PAVIMENTAÇÃO DA RUA:</label><span
+                            class="help-icon" onclick="showHelp('pavimentacao')">?</span></div><select id="pavimentacao"
+                        name="pavimentacao">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Asfalto</option>
+                        <option>Anti-pó</option>
+                        <option>Paralelepípedo</option>
+                        <option>Terra</option>
+                        <option>Lajota</option>
+                        <option>Cascalho</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label>INFRAESTRUTURA URBANA:</label><span class="help-icon"
+                            onclick="showHelp('infraestrutura')">?</span></div>
+                    <div class="selection-grid">
+                        <div class="checkbox-item"><input type="checkbox" id="infra_agua"
+                                name="infraestrutura_urbana"><label for="infra_agua">Água</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="infra_arborizacao"
+                                name="infraestrutura_urbana"><label for="infra_arborizacao">Arborização</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="infra_esg_sanitario"
+                                name="infraestrutura_urbana"><label for="infra_esg_sanitario">Esg. Sanitário</label>
+                        </div>
+                        <div class="checkbox-item"><input type="checkbox" id="infra_esg_pluvial"
+                                name="infraestrutura_urbana"><label for="infra_esg_pluvial">Esg. Pluvial</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="infra_energia"
+                                name="infraestrutura_urbana"><label for="infra_energia">Ener. Elétrica</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="infra_telefone"
+                                name="infraestrutura_urbana"><label for="infra_telefone">Telefone</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="infra_iluminacao"
+                                name="infraestrutura_urbana"><label for="infra_iluminacao">Iluminação</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="infra_gas"
+                                name="infraestrutura_urbana"><label for="infra_gas">Gás Canalizado</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="infra_fossa"
+                                name="infraestrutura_urbana"><label for="infra_fossa">Fossa</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="infra_cisterna"
+                                name="infraestrutura_urbana"><label for="infra_cisterna">Cisterna/Poço</label></div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>DADOS DO IMÓVEL</legend>
+                <div class="form-group">
+                    <div class="label-container"><label for="area_terreno">ÁREA DO TERRENO (MEDIDA NA
+                            VISTORIA):</label><span class="help-icon" onclick="showHelp('area_terreno')">?</span></div>
+                    <input type="text" id="area_terreno" name="area_terreno" placeholder="Ex: 250 m²">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="area_construida">ÁREA CONSTRUÍDA (MEDIDA NA
+                            VISTORIA):</label><span class="help-icon" onclick="showHelp('area_construida')">?</span>
+                    </div><input type="text" id="area_construida" name="area_construida" placeholder="Ex: 120 m²">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="topografia">TOPOGRAFIA:</label><span class="help-icon"
+                            onclick="showHelp('topografia')">?</span></div><select id="topografia" name="topografia">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Plano</option>
+                        <option>Aclive</option>
+                        <option>Declive</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="implantacao">IMPLANTAÇÃO:</label><span class="help-icon"
+                            onclick="showHelp('implantacao')">?</span></div><select id="implantacao" name="implantacao">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Condomínio</option>
+                        <option>Isolado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="tipo_imovel">TIPO DO IMÓVEL:</label><span class="help-icon"
+                            onclick="showHelp('tipo_imovel')">?</span></div><input type="text" id="tipo_imovel"
+                        name="tipo_imovel" placeholder="Ex: Casa, Apartamento, Galpão">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="uso_imovel">USO DO IMÓVEL:</label><span class="help-icon"
+                            onclick="showHelp('uso_imovel')">?</span></div><select id="uso_imovel" name="uso_imovel">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Residencial</option>
+                        <option>Industrial</option>
+                        <option>Comercial</option>
+                        <option>Misto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="ocupacao">OCUPAÇÃO:</label><span class="help-icon"
+                            onclick="showHelp('ocupacao')">?</span></div><select id="ocupacao" name="ocupacao">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Ocupado</option>
+                        <option>Desabitado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="acabamento_fachada">ACABAMENTO DA FACHADA:</label><span
+                            class="help-icon" onclick="showHelp('acabamento_fachada')">?</span></div><select
+                        id="acabamento_fachada" name="acabamento_fachada">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Pintura</option>
+                        <option>Cerâmica / Pastilhas</option>
+                        <option>Granito / Mármore</option>
+                        <option>Vidro</option>
+                        <option>Pintura Texturizada / Pátina / Stucco</option>
+                        <option>Alumínio / Lâmina de Vidro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="fechamento_paredes">FECHAMENTO PAREDES /
+                            ESTRUTURA:</label><span class="help-icon" onclick="showHelp('fechamento_paredes')">?</span>
+                    </div><select id="fechamento_paredes" name="fechamento_paredes">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Alvenaria</option>
+                        <option>Drywall</option>
+                        <option>Parede de Gesso</option>
+                        <option>Madeira</option>
+                        <option>Pré-Moldado</option>
+                        <option>Misto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="esquadrias">ESQUADRIAS:</label><span class="help-icon"
+                            onclick="showHelp('esquadrias')">?</span></div><select id="esquadrias" name="esquadrias">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Alumínio</option>
+                        <option>Ferro</option>
+                        <option>Gesso</option>
+                        <option>Madeira</option>
+                        <option>PVC / Plástico</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="padrao_acabamento">PADRÃO ACABAMENTO:</label><span
+                            class="help-icon" onclick="showHelp('padrao_acabamento')">?</span></div><select
+                        id="padrao_acabamento" name="padrao_acabamento">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Mínimo</option>
+                        <option>Baixo</option>
+                        <option>Normal</option>
+                        <option>Alto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="estado_conservacao">ESTADO DE CONSERVAÇÃO:</label><span
+                            class="help-icon" onclick="showHelp('estado_conservacao')">?</span></div><select
+                        id="estado_conservacao" name="estado_conservacao">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Novo</option>
+                        <option>Bom</option>
+                        <option>Regular</option>
+                        <option>Ruim</option>
+                        <option>Sem Valor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="idade_aparente">IDADE APARENTE:</label><span
+                            class="help-icon" onclick="showHelp('idade_aparente')">?</span></div><input type="text"
+                        id="idade_aparente" name="idade_aparente" placeholder="Ex: 10 anos">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="n_andares">Nº DE ANDARES DO AVALIANDO:</label><span
+                            class="help-icon" onclick="showHelp('n_andares')">?</span></div><input type="number"
+                        id="n_andares" name="n_andares" min="0">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="vagas_descobertas">VAGA DE GARAGEM DESCOBERTA:</label><span
+                            class="help-icon" onclick="showHelp('vagas_descobertas')">?</span></div><input type="number"
+                        id="vagas_descobertas" name="vagas_descobertas" min="0">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="vagas_cobertas">VAGA DE GARAGEM COBERTA:</label><span
+                            class="help-icon" onclick="showHelp('vagas_cobertas')">?</span></div><input type="number"
+                        id="vagas_cobertas" name="vagas_cobertas" min="0">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>DESCRIÇÃO INTERNA DO AVALIANDO</legend>
+                <button type="button" class="action-button add-row-button" onclick="adicionarComodo()">+ Adicionar
+                    Cômodo</button>
+                <div id="comodosContainer"></div>
+            </fieldset>
+
+            <fieldset>
+                <legend>DADOS DO CONDOMÍNIO</legend>
+                <div class="form-group">
+                    <div class="label-container"><label for="n_pavimentos">Nº DE PAVIMENTOS TIPO:</label><span
+                            class="help-icon" onclick="showHelp('n_pavimentos')">?</span></div><input type="number"
+                        id="n_pavimentos" name="n_pavimentos" min="0">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="n_unidades_andar">Nº DE UNIDADES POR ANDAR:</label><span
+                            class="help-icon" onclick="showHelp('n_unidades_andar')">?</span></div><input type="number"
+                        id="n_unidades_andar" name="n_unidades_andar" min="0">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="n_elevadores">Nº DE ELEVADORES:</label><span
+                            class="help-icon" onclick="showHelp('n_elevadores')">?</span></div><input type="number"
+                        id="n_elevadores" name="n_elevadores" min="0">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="n_subsolos">Nº DE SUBSOLOS:</label><span class="help-icon"
+                            onclick="showHelp('n_subsolos')">?</span></div><input type="number" id="n_subsolos"
+                        name="n_subsolos" min="0">
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="padrao_condominio">PADRÃO DO CONDOMÍNIO:</label><span
+                            class="help-icon" onclick="showHelp('padrao_condominio')">?</span></div><select
+                        id="padrao_condominio" name="padrao_condominio">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Baixo</option>
+                        <option>Normal</option>
+                        <option>Alto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="estado_condominio">ESTADO DE CONSERVAÇÃO DO
+                            CONDOMÍNIO:</label><span class="help-icon" onclick="showHelp('estado_condominio')">?</span>
+                    </div><select id="estado_condominio" name="estado_condominio">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Bom</option>
+                        <option>Regular</option>
+                        <option>Ruim</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label for="uso_condominio">USO DO CONDOMÍNIO:</label><span
+                            class="help-icon" onclick="showHelp('uso_condominio')">?</span></div><select
+                        id="uso_condominio" name="uso_condominio">
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option>Residencial</option>
+                        <option>Industrial</option>
+                        <option>Comercial</option>
+                        <option>Misto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="label-container"><label>INFRAESTRUTURA DO CONDOMÍNIO:</label><span class="help-icon"
+                            onclick="showHelp('infra_condominio')">?</span></div>
+                    <div class="selection-grid">
+                        <div class="checkbox-item"><input type="checkbox" id="cond_playground"
+                                name="infra_condominio"><label for="cond_playground">Playground</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_churrasqueira"
+                                name="infra_condominio"><label for="cond_churrasqueira">Churrasqueira</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_sauna" name="infra_condominio"><label
+                                for="cond_sauna">Sauna</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_gerador"
+                                name="infra_condominio"><label for="cond_gerador">Gerador</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_pista_cooper"
+                                name="infra_condominio"><label for="cond_pista_cooper">Pista de Cooper</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_piscina"
+                                name="infra_condominio"><label for="cond_piscina">Piscina</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_salao_festas"
+                                name="infra_condominio"><label for="cond_salao_festas">Salão de Festas</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_sala_jogos"
+                                name="infra_condominio"><label for="cond_sala_jogos">Sala de Jogos</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_sala_ginastica"
+                                name="infra_condominio"><label for="cond_sala_ginastica">Sala de Ginástica</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_loja" name="infra_condominio"><label
+                                for="cond_loja">Loja Conveniência</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_interfone"
+                                name="infra_condominio"><label for="cond_interfone">Interfone</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_tv_cabo"
+                                name="infra_condominio"><label for="cond_tv_cabo">TV a Cabo</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_lavanderia"
+                                name="infra_condominio"><label for="cond_lavanderia">Lavanderia Coletiva</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_quadra"
+                                name="infra_condominio"><label for="cond_quadra">Quadra Esportiva</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_tv_satelite"
+                                name="infra_condominio"><label for="cond_tv_satelite">TV Satélite</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_deposito"
+                                name="infra_condominio"><label for="cond_deposito">Depósito Individual</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_vigilancia"
+                                name="infra_condominio"><label for="cond_vigilancia">Vigilância Eletrônica</label></div>
+                        <div class="checkbox-item"><input type="checkbox" id="cond_jardins"
+                                name="infra_condominio"><label for="cond_jardins">Jardins</label></div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>QUESTIONÁRIO - SE A RESPOSTA FOR POSITIVA, REGISTRAR EM FOTOS</legend>
+                <div class="form-group"><span class="question-text">O imóvel possui identificação numérica?</span>
+                    <div class="radio-group">
+                        <div class="radio-item"><input type="radio" id="q_id_num_sim" name="q_id_num" value="Sim"><label
+                                for="q_id_num_sim">Sim</label></div>
+                        <div class="radio-item"><input type="radio" id="q_id_num_nao" name="q_id_num" value="Não"><label
+                                for="q_id_num_nao">Não</label></div>
+                    </div>
+                </div>
+                <div class="form-group"><span class="question-text">O imóvel possui cobertura leve? (Apresentar croqui
+                        informando tal área)</span>
+                    <div class="radio-group">
+                        <div class="radio-item"><input type="radio" id="q_cob_leve_sim" name="q_cob_leve"
+                                value="Sim"><label for="q_cob_leve_sim">Sim</label></div>
+                        <div class="radio-item"><input type="radio" id="q_cob_leve_nao" name="q_cob_leve"
+                                value="Não"><label for="q_cob_leve_nao">Não</label></div>
+                    </div>
+                </div>
+                <div class="form-group"><span class="question-text">O logradouro possui placa de identificação?</span>
+                    <div class="radio-group">
+                        <div class="radio-item"><input type="radio" id="q_placa_rua_sim" name="q_placa_rua"
+                                value="Sim"><label for="q_placa_rua_sim">Sim</label></div>
+                        <div class="radio-item"><input type="radio" id="q_placa_rua_nao" name="q_placa_rua"
+                                value="Não"><label for="q_placa_rua_nao">Não</label></div>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>QUESTIONÁRIO - SE A RESPOSTA FOR POSITIVA, DESCREVER NAS INFOS. COMPLEMENTARES</legend>
+                <div class="form-group"><span class="question-text">O imóvel possui indícios de contaminação? (Informar
+                        tais indícios)</span>
+                    <div class="radio-group">
+                        <div class="radio-item"><input type="radio" id="q_contam_sim" name="q_contam" value="Sim"><label
+                                for="q_contam_sim">Sim</label></div>
+                        <div class="radio-item"><input type="radio" id="q_contam_nao" name="q_contam" value="Não"><label
+                                for="q_contam_nao">Não</label></div>
+                    </div>
+                </div>
+                <div class="form-group"><span class="question-text">O imóvel está unificado a outro imóvel?</span>
+                    <div class="radio-group">
+                        <div class="radio-item"><input type="radio" id="q_unif_sim" name="q_unif" value="Sim"><label
+                                for="q_unif_sim">Sim</label></div>
+                        <div class="radio-item"><input type="radio" id="q_unif_nao" name="q_unif" value="Não"><label
+                                for="q_unif_nao">Não</label></div>
+                    </div>
+                </div>
+                <div class="form-group"><span class="question-text">O imóvel possui características comerciais?
+                        (Informar se é total ou parcial e quais atividades são exercidas)</span>
+                    <div class="radio-group">
+                        <div class="radio-item"><input type="radio" id="q_comerc_sim" name="q_comerc" value="Sim"><label
+                                for="q_comerc_sim">Sim</label></div>
+                        <div class="radio-item"><input type="radio" id="q_comerc_nao" name="q_comerc" value="Não"><label
+                                for="q_comerc_nao">Não</label></div>
+                    </div>
+                </div>
+                <div class="form-group"><span class="question-text">Algum cômodo não foi possível vistoriar? (Informar o
+                        motivo e apresentar guia de Vistoria Parcial)</span>
+                    <div class="radio-group">
+                        <div class="radio-item"><input type="radio" id="q_imposs_sim" name="q_imposs" value="Sim"><label
+                                for="q_imposs_sim">Sim</label></div>
+                        <div class="radio-item"><input type="radio" id="q_imposs_nao" name="q_imposs" value="Não"><label
+                                for="q_imposs_nao">Não</label></div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>INFORMAÇÕES COMPLEMENTARES</legend>
+                <div class="form-group">
+                    <div class="label-container">
+                        <label for="info_complementares">Descreva aqui qualquer observação relevante:</label>
+                        <span class="help-icon" onclick="showHelp('info_complementares')">?</span>
+                    </div>
+                    <textarea id="info_complementares" name="info_complementares" rows="8"></textarea>
+                </div>
+            </fieldset>
+
+            <button type="button" class="action-button pdf-button" onclick="gerarPDF()">Gerar PDF da Vistoria</button>
+        </form>
+    </div>
+
+    <template id="comodoTemplate">
+        <div class="comodo-row">
+            <div class="form-group c-nome"><input type="text" class="comodo-nome" placeholder="Cômodo"
+                    list="comodo-options"><datalist id="comodo-options">
+                    <option value="DORMITÓRIO"></option>
+                    <option value="SUÍTE (DORMITÓRIO + WC)"></option>
+                    <option value="BANHEIRO SOCIAL"></option>
+                    <option value="COZINHA"></option>
+                    <option value="ÁREA DE SERVIÇOS COBERTA"></option>
+                </datalist></div>
+            <div class="form-group c-qtde"><input type="number" class="comodo-qtde" placeholder="Qtde." min="1"
+                    value="1"></div>
+            <div class="form-group c-piso"><input type="text" class="comodo-piso" placeholder="Piso"
+                    list="piso-options"><datalist id="piso-options">
+                    <option value="Cerâmica"></option>
+                    <option value="Cimento Queimado"></option>
+                    <option value="Laminado de Madeira"></option>
+                    <option value="Mármore"></option>
+                    <option value="Granito"></option>
+                    <option value="Porcelanato"></option>
+                    <option value="Vinílico"></option>
+                    <option value="Outros"></option>
+                </datalist></div>
+            <div class="form-group c-parede"><input type="text" class="comodo-parede" placeholder="Parede/Pintura"
+                    list="parede-options"><datalist id="parede-options">
+                    <option value="Alvenaria"></option>
+                    <option value="Azulejo até o teto"></option>
+                    <option value="Barra Lisa"></option>
+                    <option value="Gesso"></option>
+                    <option value="Massa Corrida"></option>
+                    <option value="Papel de Parede"></option>
+                    <option value="Pintura"></option>
+                    <option value="Textura"></option>
+                    <option value="Outros"></option>
+                </datalist></div>
+            <div class="form-group c-teto"><input type="text" class="comodo-teto" placeholder="Teto"
+                    list="teto-options"><datalist id="teto-options">
+                    <option value="Gesso"></option>
+                    <option value="Laje"></option>
+                    <option value="Forro de Madeira"></option>
+                    <option value="Forro de PVC"></option>
+                    <option value="Pintura"></option>
+                    <option value="Textura"></option>
+                    <option value="Outros"></option>
+                </datalist></div>
+            <div class="form-group c-remover"><button type="button" class="action-button remove-row-button"
+                    onclick="this.closest('.comodo-row').remove()">🗑️</button></div>
+        </div>
+    </template>
+
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal-content"><span class="modal-close" onclick="hideHelp()">&times;</span>
+            <p id="modalText"></p>
+        </div>
+    </div>
+
+    <footer id="page-footer">
+        <p>
+            Desenvolvido por <strong>João Paulo</strong><br>
+            Especialista em Desenvolvimento
+        </p>
+        <p>
+            <a href="mailto:contato@joaopaulovieira.dev">Contato para Desenvolvimento</a>
+        </p>
+        <p>&copy; 2025 - Todos os direitos reservados</p>
+    </footer>
+
+    <script>
+        const helpTexts = {
+            'proposta_n': 'Insira o número da proposta ou do processo de financiamento/vistoria, se houver.',
+            'data_hora_vistoria': 'Selecione a data e o horário em que a vistoria foi realizada no local.',
+            'coordenadas': 'Insira as coordenadas de Latitude e Longitude do imóvel. Clique no botão com o ícone de localização para preencher automaticamente com a sua posição atual (requer permissão do navegador).',
+            'vistoriador': 'Nome do profissional responsável pela vistoria. Este campo não pode ser alterado.',
+            'cau_crea': 'Registro profissional do vistoriador. Campo não alterável.',
+            'tipo_acompanhante': 'Escolha na lista a função da pessoa que acompanhou a vistoria.',
+            'nome_acompanhante': 'Digite o nome completo da pessoa que acompanhou a vistoria.',
+            'contato': 'Insira o telefone ou e-mail da pessoa que acompanhou a vistoria.',
+            'endereco': 'Nome da rua, avenida, etc., do imóvel vistoriado.',
+            'numero': 'Número do imóvel. Se não houver, indique "S/N".',
+            'bairro': 'Bairro onde o imóvel está localizado.',
+            'uf': 'Sigla do estado (Unidade Federativa), por exemplo: RJ, SP.',
+            'cidade': 'Cidade onde o imóvel está localizado.',
+            'complemento': 'Informações adicionais como bloco, apartamento, casa, etc.',
+            'uso_predominante': 'Selecione o tipo de ocupação mais comum na vizinhança do imóvel.',
+            'padrao_construtivo': 'Selecione o padrão geral das construções na região.',
+            'localizacao': 'Classifique a localização do imóvel dentro do município.',
+            'desenvolvimento_bairro': 'Selecione o estágio de desenvolvimento e ocupação do bairro.',
+            'trafego': 'Classifique a intensidade do tráfego de veículos na rua do imóvel.',
+            'pavimentacao': 'Selecione o tipo de calçamento da rua em frente ao imóvel.',
+            'infraestrutura': 'Marque todos os serviços públicos e de infraestrutura disponíveis na rua do imóvel.',
+            'area_terreno': 'Área total do terreno em metros quadrados (m²), conforme medição ou documento.',
+            'area_construida': 'Área total construída do imóvel em metros quadrados (m²).',
+            'topografia': 'Selecione a inclinação do terreno.',
+            'implantacao': 'Indique se o imóvel está em um condomínio ou se é uma unidade isolada na rua.',
+            'tipo_imovel': 'Descreva o tipo do imóvel (Ex: Casa térrea, Sobrado, Apartamento tipo, Cobertura, Sala comercial).',
+            'uso_imovel': 'Selecione o uso principal do imóvel vistoriado.',
+            'ocupacao': 'Indique se o imóvel está atualmente ocupado ou não.',
+            'acabamento_fachada': 'Selecione o principal material de revestimento da fachada.',
+            'fechamento_paredes': 'Selecione o tipo de material usado para construir as paredes e a estrutura.',
+            'esquadrias': 'Material predominante das janelas, portas e portões.',
+            'padrao_acabamento': 'Classificação geral da qualidade dos acabamentos internos do imóvel.',
+            'estado_conservacao': 'Avaliação geral do estado de manutenção e conservação do imóvel.',
+            'idade_aparente': 'Estimativa da idade do imóvel em anos.',
+            'n_andares': 'Número total de andares/pavimentos do imóvel avaliado.',
+            'vagas_descobertas': 'Número de vagas de garagem sem cobertura.',
+            'vagas_cobertas': 'Número de vagas de garagem com cobertura.',
+            'n_pavimentos': 'Número de andares do prédio (sem contar térreo e subsolos).',
+            'n_unidades_andar': 'Quantidade de apartamentos ou unidades por andar.',
+            'n_elevadores': 'Número total de elevadores no condomínio/bloco.',
+            'n_subsolos': 'Número de andares de garagem abaixo do nível do solo.',
+            'padrao_condominio': 'Classificação geral do padrão do condomínio.',
+            'estado_condominio': 'Estado de conservação das áreas comuns do condomínio.',
+            'uso_condominio': 'Finalidade principal do condomínio.',
+            'infra_condominio': 'Marque todos os itens de lazer e infraestrutura que o condomínio oferece.',
+            'info_complementares': 'Use este espaço para detalhar respostas dos questionários, descrever problemas encontrados, ou qualquer outra informação relevante que não se encaixe nos outros campos.'
+        };
+        const modalOverlay = document.getElementById('helpModal');
+        const modalText = document.getElementById('modalText');
+        function showHelp(fieldId) { modalText.textContent = helpTexts[fieldId] || 'Ajuda não encontrada.'; modalOverlay.classList.add('active'); }
+        function hideHelp() { modalOverlay.classList.remove('active'); }
+        modalOverlay.addEventListener('click', function (event) { if (event.target === modalOverlay) { hideHelp(); } });
+
+        function obterLocalizacao() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(function (position) { document.getElementById('latitude').value = position.coords.latitude.toFixed(6); document.getElementById('longitude').value = position.coords.longitude.toFixed(6); }, function () { alert('Não foi possível obter a localização. Verifique as permissões do seu navegador.'); }); } else { alert("Geolocalização não é suportada por este navegador."); } }
+
+        function adicionarComodo() {
+            const template = document.getElementById('comodoTemplate');
+            const container = document.getElementById('comodosContainer');
+            const clone = template.content.cloneNode(true);
+            container.appendChild(clone);
+        }
+
+        async function gerarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+            let y = 40;
+            const x = 40;
+            const fieldMargin = 22;
+            const sectionMargin = 30;
+            let rightColX = x + 240;
+
+            function addPageIfNeeded() { if (y > 780) { doc.addPage(); y = 40; } }
+            function addField(label, value) { addPageIfNeeded(); const displayValue = value || 'Não preenchido'; doc.setFontSize(10).setFont(undefined, 'bold').text(label, x, y, { maxWidth: rightColX - x - 10 }); doc.setFont(undefined, 'normal').text(displayValue, rightColX, y, { maxWidth: 555 - rightColX }); y += fieldMargin; }
+            function addSectionTitle(title) { addPageIfNeeded(); doc.setFontSize(14).setFont(undefined, 'bold').text(title, x, y); y += sectionMargin; }
+            function addSeparator() { addPageIfNeeded(); y += fieldMargin / 2; doc.setLineDashPattern([2, 2], 0); doc.line(x, y, 555, y); doc.setLineDashPattern([], 0); y += fieldMargin * 1.5; }
+            function getSelectText(id) { const select = document.getElementById(id); return select.selectedIndex > 0 ? select.options[select.selectedIndex].text : ''; }
+            function getRadioValue(name) { const radio = document.querySelector(`input[name="${name}"]:checked`); return radio ? radio.value : ''; }
+
+            doc.setFontSize(16).setFont(undefined, 'bold').text('ATA DE VISTORIA 1.0', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' }); y += fieldMargin;
+            doc.setFontSize(8).setFont(undefined, 'normal').text('ATENÇÃO: OS DADOS A SEGUIR DEVERÃO SER PREENCHIDOS COM AS INFORMAÇÕES OBTIDAS NO MOMENTO DA VISTORIA', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' }); y += sectionMargin;
+
+            addSectionTitle('DADOS INICIAIS');
+            const proposta = document.getElementById('proposta_n').value;
+            let dataHoraInput = document.getElementById('data_hora_vistoria').value; let dataHoraFormatada = ''; if (dataHoraInput) { const data = new Date(dataHoraInput); dataHoraFormatada = `${String(data.getDate()).padStart(2, '0')}/${String(data.getMonth() + 1).padStart(2, '0')}/${data.getFullYear()} às ${String(data.getHours()).padStart(2, '0')}:${String(data.getMinutes()).padStart(2, '0')}`; }
+            const lat = document.getElementById('latitude').value; const lon = document.getElementById('longitude').value; const coordenadas = lat && lon ? `Lat: ${lat}, Lon: ${lon}` : '';
+            addField('PROPOSTA Nº:', proposta); addField('DATA E HORA DA VISTORIA:', dataHoraFormatada); addField('COORDENADAS:', coordenadas); addField('VISTORIADOR:', document.getElementById('vistoriador').value); addField('CAU/CREA:', document.getElementById('cau_crea').value); addField('TIPO DE ACOMPANHANTE:', getSelectText('tipo_acompanhante')); addField('NOME DO ACOMPANHANTE:', document.getElementById('nome_acompanhante').value); addField('CONTATO:', document.getElementById('contato').value);
+            addSeparator();
+
+            addSectionTitle('ENDEREÇO / LOCALIZAÇÃO EXATA DO IMÓVEL');
+            addField('ENDEREÇO:', document.getElementById('endereco').value); addField('NÚMERO:', document.getElementById('numero').value); addField('BAIRRO:', document.getElementById('bairro').value); addField('UF:', document.getElementById('uf').value); addField('CIDADE:', document.getElementById('cidade').value); addField('COMPLEMENTO:', document.getElementById('complemento').value);
+
+            y += sectionMargin / 2;
+            addSectionTitle('CHECK LIST DAS FOTOS');
+            const checkedFotos = [];
+            document.querySelectorAll('input[name="fotos_checklist"]:checked').forEach((checkbox) => { checkedFotos.push(checkbox.nextElementSibling.textContent); });
+            doc.setFontSize(10).setFont(undefined, 'normal').text(checkedFotos.length > 0 ? checkedFotos.join('; ') : 'Nenhum item marcado.', x, y, { maxWidth: 515 });
+            y += fieldMargin;
+            addSeparator();
+
+            addSectionTitle('CARACTERÍSTICAS DA REGIÃO');
+            addField('USO PREDOMINANTE:', getSelectText('uso_predominante')); addField('PADRÃO CONSTRUTIVO DA REGIÃO:', getSelectText('padrao_construtivo')); addField('LOCALIZAÇÃO:', getSelectText('localizacao')); addField('DESENVOLVIMENTO DO BAIRRO:', getSelectText('desenvolvimento_bairro')); addField('TRÁFEGO:', getSelectText('trafego')); addField('PAVIMENTAÇÃO DA RUA:', getSelectText('pavimentacao'));
+            const checkedInfra = [];
+            document.querySelectorAll('input[name="infraestrutura_urbana"]:checked').forEach((checkbox) => { checkedInfra.push(checkbox.nextElementSibling.textContent); });
+            doc.setFontSize(10).setFont(undefined, 'bold').text('INFRAESTRUTURA URBANA:', x, y);
+            doc.setFont(undefined, 'normal').text(checkedInfra.length > 0 ? checkedInfra.join('; ') : 'Nenhum item marcado.', rightColX - 20, y, { maxWidth: 555 - (rightColX - 20) });
+            y += fieldMargin;
+            addSeparator();
+
+            addSectionTitle('DADOS DO IMÓVEL');
+            addField('ÁREA DO TERRENO:', document.getElementById('area_terreno').value); addField('ÁREA CONSTRUÍDA:', document.getElementById('area_construida').value);
+            addField('TOPOGRAFIA:', getSelectText('topografia')); addField('IMPLANTAÇÃO:', getSelectText('implantacao')); addField('TIPO DO IMÓVEL:', document.getElementById('tipo_imovel').value);
+            addField('USO DO IMÓVEL:', getSelectText('uso_imovel')); addField('OCUPAÇÃO:', getSelectText('ocupacao')); addField('ACABAMENTO DA FACHADA:', getSelectText('acabamento_fachada'));
+            addField('FECHAMENTO PAREDES:', getSelectText('fechamento_paredes')); addField('ESQUADRIAS:', getSelectText('esquadrias')); addField('PADRÃO ACABAMENTO:', getSelectText('padrao_acabamento'));
+            addField('ESTADO DE CONSERVAÇÃO:', getSelectText('estado_conservacao')); addField('IDADE APARENTE:', document.getElementById('idade_aparente').value);
+            addField('Nº DE ANDARES:', document.getElementById('n_andares').value); addField('VAGAS DESCOBERTAS:', document.getElementById('vagas_descobertas').value);
+            addField('VAGAS COBERTAS:', document.getElementById('vagas_cobertas').value);
+            addSeparator();
+
+            addSectionTitle('DESCRIÇÃO INTERNA DO AVALIANDO');
+            const comodosData = [];
+            document.querySelectorAll('.comodo-row').forEach(row => {
+                comodosData.push([
+                    row.querySelector('.comodo-nome').value || '-',
+                    row.querySelector('.comodo-qtde').value || '-',
+                    row.querySelector('.comodo-piso').value || '-',
+                    row.querySelector('.comodo-parede').value || '-',
+                    row.querySelector('.comodo-teto').value || '-'
+                ]);
+            });
+            if (comodosData.length > 0) {
+                doc.autoTable({
+                    head: [['CÔMODO', 'QTDE.', 'PISO', 'PAREDE/PINTURA', 'TETO']],
+                    body: comodosData,
+                    startY: y,
+                    theme: 'grid',
+                    headStyles: { fillColor: [0, 86, 179] },
+                    styles: { fontSize: 8 },
+                    didDrawPage: function (data) { y = data.cursor.y; }
+                });
+                y = doc.autoTable.previous.finalY + fieldMargin;
+            } else { doc.setFontSize(10).setFont(undefined, 'normal').text('Nenhum cômodo foi adicionado.', x, y); y += fieldMargin; }
+            addSeparator();
+
+            addSectionTitle('DADOS DO CONDOMÍNIO');
+            addField('Nº DE PAVIMENTOS TIPO:', document.getElementById('n_pavimentos').value);
+            addField('Nº DE UNIDADES POR ANDAR:', document.getElementById('n_unidades_andar').value);
+            addField('Nº DE ELEVADORES:', document.getElementById('n_elevadores').value);
+            addField('Nº DE SUBSOLOS:', document.getElementById('n_subsolos').value);
+            addField('PADRÃO DO CONDOMÍNIO:', getSelectText('padrao_condominio'));
+            addField('ESTADO DE CONSERVAÇÃO:', getSelectText('estado_condominio'));
+            addField('USO DO CONDOMÍNIO:', getSelectText('uso_condominio'));
+            const checkedInfraCond = [];
+            document.querySelectorAll('input[name="infra_condominio"]:checked').forEach((checkbox) => { checkedInfraCond.push(checkbox.nextElementSibling.textContent); });
+            doc.setFontSize(10).setFont(undefined, 'bold').text('INFRAESTRUTURA:', x, y);
+            doc.setFont(undefined, 'normal').text(checkedInfraCond.length > 0 ? checkedInfraCond.join('; ') : 'Nenhum item marcado.', rightColX - 20, y, { maxWidth: 555 - (rightColX - 20) });
+            y += fieldMargin;
+            addSeparator();
+
+            addSectionTitle('QUESTIONÁRIO - REGISTRAR EM FOTOS');
+            addField('Imóvel possui identificação numérica?', getRadioValue('q_id_num'));
+            addField('Imóvel possui cobertura leve?', getRadioValue('q_cob_leve'));
+            addField('Logradouro possui placa de identificação?', getRadioValue('q_placa_rua'));
+            addSeparator();
+
+            addSectionTitle('QUESTIONÁRIO - DESCREVER NAS OBSERVAÇÕES');
+            addField('Imóvel possui indícios de contaminação?', getRadioValue('q_contam'));
+            addField('Imóvel está unificado a outro imóvel?', getRadioValue('q_unif'));
+            addField('Imóvel possui características comerciais?', getRadioValue('q_comerc'));
+            addField('Algum cômodo não foi possível vistoriar?', getRadioValue('q_imposs'));
+            addSeparator();
+
+            addSectionTitle('INFORMAÇÕES COMPLEMENTARES');
+            const infoComp = document.getElementById('info_complementares').value || 'Nenhuma informação complementar adicionada.';
+            doc.setFontSize(10).setFont(undefined, 'normal');
+            doc.text(infoComp, x, y, { maxWidth: 515 });
+
+            doc.save(`Vistoria_Proposta_${proposta || 'sem_numero'}.pdf`);
+        }
+    </script>
+</body>
+
+</html>
